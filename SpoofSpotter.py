@@ -55,7 +55,7 @@ pkt = IP(src=args.i,dst=args.b)/UDP(sport=137, dport='netbios_ns')/NBNSQueryRequ
 now = datetime.datetime.now()
 
 #Email function
-def sendEmail(REMAIL, ESERVER, IP):
+def sendEmail(REMAIL, ESERVER, IP, MAC):
 	me = 'spoofspotter@netspi.com'
 	you = REMAIL
 	server = ESERVER
@@ -67,7 +67,7 @@ def sendEmail(REMAIL, ESERVER, IP):
 	msg['To'] = you
 
 	now1 = datetime.datetime.now()
-	BODY = 'A spoofed NBNS response for %s was detected by %s at %s from host %s' %(QUERY_NAME, args.i, str(now1), IP)
+	BODY = 'A spoofed NBNS response for %s was detected by %s at %s from host %s - %s' %(QUERY_NAME, args.i, str(now1), IP, MAC)
 
 	part1 = MIMEText(BODY, 'plain')
 
@@ -86,35 +86,36 @@ def sender():
 	while 1:
 		send (pkt, verbose=0)
 
-class MyTCPHandler(SocketServer.BaseRequestHandler):
-	def handle(self):
-		request, socket = self.request
+def get_packet(pkt):
+	if not pkt.getlayer(NBNSQueryRequest):
+		return
+	if pkt.FLAGS == 0x8500:
 		now2 = datetime.datetime.now()
-		print 'A spoofed NBNS response for %s was detected by %s at %s from host %s' %(QUERY_NAME, args.i, str(now2), self.client_address[0])
+		print 'A spoofed NBNS response for %s was detected by %s at %s from host %s - %s' %(QUERY_NAME, args.i, str(now2), pkt.getlayer(IP).src, pkt.getlayer(Ether).src)
 		logged = 0
 		for i in BADIPs:
-			if i == self.client_address[0]:
+			if i == pkt.getlayer(IP).src:
 				logged = 1
 		if logged == 0:
-			BADIPs.append(str(self.client_address[0]))
+			BADIPs.append(str(pkt.getlayer(IP).src))
 			global SENT
 			SENT = 'false'
 
 		#if the file flag is set, then write the log
 		if args.f:
 			f = open(args.f, 'a')
-			f.write('A spoofed NBNS response for %s was detected by %s at %s from host %s\n' %(QUERY_NAME, args.i, str(now2), self.client_address[0]))
+			f.write('A spoofed NBNS response for %s was detected by %s at %s from host %s - %s\n' %(QUERY_NAME, args.i, str(now2), pkt.getlayer(IP).src, pkt.getlayer(Ether).src))
 			f.close()
 		#if email flags set, call the email function
 		if args.e and args.s and SENT=='false':
-			sendEmail(args.e, args.s, self.client_address[0])
+			sendEmail(args.e, args.s, pkt.getlayer(IP).src, pkt.getlayer(Ether).src)
 		if args.S:
 			NBNSLogger = logging.getLogger('NBNSLogger')
 			NBNSLogger.setLevel(logging.DEBUG)
 			#change your syslog stuff here - this is pretty beta, feel free to change this.
 			handler = logging.handlers.SysLogHandler(address = ('localhost',514), facility=19)
 			NBNSLogger.addHandler(handler)
-			NBNSLogger.critical('A spoofed NBNS response for %s was detected by %s at %s from host %s\n' %(QUERY_NAME, args.i, str(now2), self.client_address[0]))	
+			NBNSLogger.critical('A spoofed NBNS response for %s was detected by %s at %s from host %s - %s\n' %(QUERY_NAME, args.i, str(now2), pkt.getlayer(IP).src, pkt.getlayer(Ether).src))
 def main():
 	try:
 		if args.f:
@@ -125,8 +126,7 @@ def main():
 		thread.start_new(sender,())
 		try:
 			print "Starting UDP Response Server..."
-			server = SocketServer.UDPServer((args.i, UDP_PORT), MyTCPHandler)
-			server.serve_forever()
+			sniff(iface='eth0',filter="udp and port 137",store=0,prn=get_packet)
 		except KeyboardInterrupt:
                         print "\nStopping Server and Exiting...\n"
 			now3 = datetime.datetime.now()
@@ -141,3 +141,4 @@ def main():
 	except:
 		print "Server could not be started, confirm you're running this as root.\n"
 main()
+

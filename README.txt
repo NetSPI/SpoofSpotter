@@ -24,6 +24,8 @@ Example Usage:
 	sudo python spoofspotter.py -i 192.168.1.161 -b 192.168.1.255 -n NBNSHOSTQUERY -s 192.168.1.2 -e karl.fosaaen@example.com -f test.log
 		- this will send an email alert to karl.fosaaen@example.com when an attack is identified
 		- this will also log to test.log
+
+Requires Scapy
 		
 To Do List:
 	Randomize NBNS Requests

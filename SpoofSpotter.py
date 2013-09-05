@@ -20,16 +20,17 @@ from array import array
 #     Spoofed responses are alerterd on with    #
 #     email and/or SYSLOG                       #
 #                                               #
+# Written by Karl Fosaaen                       #
+#     Twitter: @kfosaaen                        #
 #################################################
 
-
-UDP_PORT = 137
+#Some static variables
 QUERY_NAME = "NETSPITEST"
 RESP_SMB = 'false'
 SENT = 'false'
-
 BADIPs = [] 
 
+#Parser Starter
 parser = argparse.ArgumentParser(description='A tool to catch spoofed NBNS responses')
 
 #Required Flags
@@ -48,12 +49,14 @@ parser.add_argument('-d', action="store", metavar='5', help='Time delay (in seco
 
 args = parser.parse_args()
 
+#Handle Custom Queries
 if args.n:
 	QUERY_NAME = args.n
 
-#Scapy packet creation
+#Scapy broadcast packet creation
 pkt = IP(src=args.i,dst=args.b)/UDP(sport=137, dport='netbios_ns')/NBNSQueryRequest(SUFFIX="file server service",QUESTION_NAME=QUERY_NAME, QUESTION_TYPE='NB')
 
+#What time is it?
 now = datetime.datetime.now()
 
 #Email function
@@ -78,12 +81,15 @@ def sendEmail(REMAIL, ESERVER, IP, MAC):
 	s = smtplib.SMTP(server)
 	s.sendmail(me, [you], msg.as_string())
 	s.quit()
-
+	#Thanks Python Example Code
+	
+	#Flag for preventing email spamming
 	if not args.c:
 		global SENT
 		SENT = 'true'
 	print "Email Sent"
 
+#Sends out the queries
 def sender():
 	while 1:
 		send (pkt, verbose=0)
@@ -91,6 +97,7 @@ def sender():
 		if args.d:
 			time.sleep(float(args.d))
 
+#Handler for incoming NBNS responses
 def get_packet(pkt):
 	if not pkt.getlayer(NBNSQueryRequest):
 		return
@@ -114,6 +121,7 @@ def get_packet(pkt):
 		#if email flags set, call the email function
 		if args.e and args.s and SENT=='false':
 			sendEmail(args.e, args.s, pkt.getlayer(IP).src, pkt.getlayer(Ether).src)
+		#if syslog flag is set, then log it
 		if args.S:
 			NBNSLogger = logging.getLogger('NBNSLogger')
 			NBNSLogger.setLevel(logging.DEBUG)
@@ -121,6 +129,7 @@ def get_packet(pkt):
 			handler = logging.handlers.SysLogHandler(address = ('localhost',514), facility=19)
 			NBNSLogger.addHandler(handler)
 			NBNSLogger.critical('A spoofed NBNS response for %s was detected by %s at %s from host %s - %s\n' %(QUERY_NAME, args.i, str(now2), pkt.getlayer(IP).src, pkt.getlayer(Ether).src))
+			#Seriously, I didn't test this with an actual syslog server, please let me know if this works for you
 def main():
 	try:
 		if args.f:

@@ -10,6 +10,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import datetime
 import argparse
+import time
 import sys
 from array import array
 
@@ -43,6 +44,7 @@ parser.add_argument('-s', action="store", metavar='192.168.1.109', help='Email S
 parser.add_argument('-n', action="store", metavar='EXAMPLEDOMAIN', help='The string to query with NBNS, this should be unique')
 parser.add_argument('-R', action="store", metavar='true', help='The option to send Garbage SMB Auth requests to the attacker(not implemented yet)')
 parser.add_argument('-c', action="store", metavar='true', help='Continue Emailing After a Detection, could lead to spam')
+parser.add_argument('-d', action="store", metavar='5', help='Time delay (in seconds) between NBNS broadcasts, reduces network noise')
 
 args = parser.parse_args()
 
@@ -85,6 +87,9 @@ def sendEmail(REMAIL, ESERVER, IP, MAC):
 def sender():
 	while 1:
 		send (pkt, verbose=0)
+		# If there's a delay set, then wait
+		if args.d:
+			time.sleep(float(args.d))
 
 def get_packet(pkt):
 	if not pkt.getlayer(NBNSQueryRequest):

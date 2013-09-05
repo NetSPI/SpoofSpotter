@@ -1,7 +1,7 @@
 usage: sudo python spoofspotter.py [-h] -i 192.168.1.110 -b 192.168.1.255
                        [-f /home/nbns.log] [-S true] [-e you@example.com]
                        [-s 192.168.1.109] [-n EXAMPLEDOMAIN] [-R true]
-                       [-c true]
+                       [-c true] [-d 5]
 
 A tool to catch spoofed NBNS responses.
 
@@ -19,6 +19,7 @@ Optional arguments:
   -n EXAMPLEDOMAIN      The string to query with NBNS, this should be unique
   -R true               The option to send Garbage SMB Auth requests to the attacker (not implemented yet)
   -c true               Continue Emailing After a Detection, could lead to spam
+  -d 5                  Time delay (in seconds) between NBNS broadcasts, reduces network noise
 
 Example Usage:
 	sudo python spoofspotter.py -i 192.168.1.161 -b 192.168.1.255 -n NBNSHOSTQUERY -s 192.168.1.2 -e karl.fosaaen@example.com -f test.log

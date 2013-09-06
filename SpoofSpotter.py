@@ -148,8 +148,8 @@ def get_packet(pkt):
 
 				#Sends SMB, FTP, and WWW Auth
 				subprocess.Popen(['smbclient', '-U', randpass, pathstr], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
-				subprocess.Popen(['wget', ftpstr], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
-				subprocess.Popen(['wget', wwwstr], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
+				subprocess.Popen(['wget', ftpstr, '-o', '/dev/null'], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
+				subprocess.Popen(['wget', wwwstr, '-o', '/dev/null'], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
 
 def main():
 	try:

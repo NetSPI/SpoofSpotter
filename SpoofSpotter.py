@@ -140,16 +140,16 @@ def get_packet(pkt):
 
 		if args.R:
 			print 'Sending %d hashes to %s'%(int(args.R), pkt.getlayer(IP).src)
-				for x in range(0, int(args.R)):
-					randpass = 'demo/myadmin%%%s'%(randomword(8))
-					pathstr = '//%s/C$'%(pkt.getlayer(IP).src)
-					ftpstr = 'ftp://myadmin:%s@%s'%(randomword(8), pkt.getlayer(IP).src)
-					wwwstr = 'http://myadmin:%s@%s/test'%(randomword(8), pkt.getlayer(IP).src)
+			for x in range(0, int(args.R)):
+				randpass = 'demo/myadmin%%%s'%(randomword(8))
+				pathstr = '//%s/C$'%(pkt.getlayer(IP).src)
+				ftpstr = 'ftp://myadmin:%s@%s'%(randomword(8), pkt.getlayer(IP).src)
+				wwwstr = 'http://myadmin:%s@%s/test'%(randomword(8), pkt.getlayer(IP).src)
 
-					#Sends SMB, FTP, and WWW Auth
-					subprocess.Popen(['smbclient', '-U', randpass, pathstr], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
-					subprocess.Popen(['wget', ftpstr], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
-					subprocess.Popen(['wget', wwwstr], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
+				#Sends SMB, FTP, and WWW Auth
+				subprocess.Popen(['smbclient', '-U', randpass, pathstr], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
+				subprocess.Popen(['wget', ftpstr], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
+				subprocess.Popen(['wget', wwwstr], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
 
 def main():
 	try:

@@ -1,6 +1,6 @@
 usage: sudo python spoofspotter.py [-h] -i 192.168.1.110 -b 192.168.1.255
                        [-f /home/nbns.log] [-S true] [-e you@example.com]
-                       [-s 192.168.1.109] [-n EXAMPLEDOMAIN] [-R true]
+                       [-s 192.168.1.109] [-n EXAMPLEDOMAIN] [-R 5]
                        [-c true] [-d 5]
 
 A tool to catch spoofed NBNS responses.
@@ -17,7 +17,7 @@ Optional arguments:
   -e you@example.com    The email to receive alerts at
   -s 192.168.1.109      Email Server to Send Emails to
   -n EXAMPLEDOMAIN      The string to query with NBNS, this should be unique
-  -R true               The option to send Garbage SMB Auth requests to the attacker (not implemented yet)
+  -R 5               The number of Garbage SMB Auth requests to send to the attacker
   -c true               Continue Emailing After a Detection, could lead to spam
   -d 5                  Time delay (in seconds) between NBNS broadcasts, reduces network noise
 
@@ -31,7 +31,5 @@ Requires Scapy
 To Do List:
 	Randomize NBNS Requests
 		-Make it harder for attackers to detect this script
-	Respond with dummy smb hashes
-		-Make it a pain for the attacker
 	Detection of Responder versus MSF
 		-Make it easier to identify the tool that's spoofing

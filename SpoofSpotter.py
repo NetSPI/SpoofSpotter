@@ -9,10 +9,12 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import datetime
+import random, string
 import argparse
-import time
 import sys
+import subprocess
 from array import array
+
 
 #################################################
 # Spoof Sniffer                                 #
@@ -26,7 +28,6 @@ from array import array
 
 #Some static variables
 QUERY_NAME = "NETSPITEST"
-RESP_SMB = 'false'
 SENT = 'false'
 BADIPs = [] 
 
@@ -43,7 +44,7 @@ parser.add_argument('-S', action="store", metavar='true', help='Log to local Sys
 parser.add_argument('-e', action="store", metavar='you@example.com', help='The email to receive alerts at')
 parser.add_argument('-s', action="store", metavar='192.168.1.109', help='Email Server to Send Emails to')
 parser.add_argument('-n', action="store", metavar='EXAMPLEDOMAIN', help='The string to query with NBNS, this should be unique')
-parser.add_argument('-R', action="store", metavar='true', help='The option to send Garbage SMB Auth requests to the attacker(not implemented yet)')
+parser.add_argument('-R', action="store", metavar='5', help='The number of Garbage SMB Auth requests to send to the attacker')
 parser.add_argument('-c', action="store", metavar='true', help='Continue Emailing After a Detection, could lead to spam')
 parser.add_argument('-d', action="store", metavar='5', help='Time delay (in seconds) between NBNS broadcasts, reduces network noise')
 
@@ -53,6 +54,11 @@ args = parser.parse_args()
 if args.n:
 	QUERY_NAME = args.n
 
+# Random String Generation
+def randomword(length):
+   return ''.join(random.choice(string.lowercase) for j in range(length))
+	
+	
 #Scapy broadcast packet creation
 pkt = IP(src=args.i,dst=args.b)/UDP(sport=137, dport='netbios_ns')/NBNSQueryRequest(SUFFIX="file server service",QUESTION_NAME=QUERY_NAME, QUESTION_TYPE='NB')
 
@@ -130,6 +136,13 @@ def get_packet(pkt):
 			NBNSLogger.addHandler(handler)
 			NBNSLogger.critical('A spoofed NBNS response for %s was detected by %s at %s from host %s - %s\n' %(QUERY_NAME, args.i, str(now2), pkt.getlayer(IP).src, pkt.getlayer(Ether).src))
 			#Seriously, I didn't test this with an actual syslog server, please let me know if this works for you
+		                #if the respond flag is set, respond with x number of hashes
+		if args.R:
+			print 'Sending %d hashes to %s'%(int(args.R), pkt.getlayer(IP).src)
+			for x in range(0, int(args.R)):
+				randpass = 'demo/myadmin%%%s'%(randomword(8))
+				pathstr = '//%s/C$'%(pkt.getlayer(IP).src)
+				subprocess.Popen(['smbclient', '-U', randpass, pathstr], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
 def main():
 	try:
 		if args.f:

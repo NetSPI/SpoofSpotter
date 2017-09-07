@@ -102,6 +102,8 @@ def sender():
 		# If there's a delay set, then wait
 		if args.d:
 			time.sleep(float(args.d))
+		else:
+			time.sleep(float(1))
 
 #Handler for incoming NBNS responses
 def get_packet(pkt):

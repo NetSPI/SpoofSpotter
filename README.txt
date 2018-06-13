@@ -20,6 +20,7 @@ Optional arguments:
   -R 5               The number of Garbage SMB Auth requests to send to the attacker
   -c true               Continue Emailing After a Detection, could lead to spam
   -d 5                  Time delay (in seconds) between NBNS broadcasts, reduces network noise
+  			Default is set to 1 second between NBNS broadcasts.
 
 Example Usage:
 	sudo python spoofspotter.py -i 192.168.1.161 -b 192.168.1.255 -n NBNSHOSTQUERY -s 192.168.1.2 -e karl.fosaaen@example.com -f test.log
